@@ -1,0 +1,31 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: docker build -t resume-builder .
+
+      - name: Create container
+        run: docker create --name resume resume-builder
+
+      - name: Copy result
+        run: docker cp resume:/cv/main.pdf ./resume.pdf
+
+      - name: Remove container
+        run: docker rm resume
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          destination_dir: cv

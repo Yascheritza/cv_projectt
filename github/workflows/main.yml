@@ -1,0 +1,34 @@
+name: Build PDF
+
+on:
+  push:
+    paths:
+      - 'CV/**'
+      - 'Dockerfile'
+      - '.github/workflows/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: docker build -t resume-builder .
+
+      - name: Create container
+        run: docker create --name resume resume-builder
+
+      - name: Copy result
+        run: docker cp resume:/cv/main.pdf ./main.pdf
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: resume-pdf
+          path: ./main.pdf
+
+      - name: Remove container
+        run: docker rm resume
